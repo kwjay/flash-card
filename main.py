@@ -3,13 +3,16 @@ import pandas
 import random
 
 BACKGROUND_COLOR = "#B1DDC6"
+try:
+    data = pandas.read_csv("data/french_words.csv")
+except FileNotFoundError:
+    data = pandas.read_csv("data/french_words.csv")
 
-data = pandas.read_csv("data/french_words.csv")
 words = data.to_dict(orient="records")
 word = {}
 
 
-def new_word():
+def next_word():
     global word, timer
     window.after_cancel(timer)
     word = random.choice(words)
@@ -23,6 +26,11 @@ def flip_card():
     canvas.itemconfig(language_label, text="English", fill="white")
     canvas.itemconfig(word_label, text=word["English"], fill="white")
     canvas.itemconfig(card_img, image=card_back_file)
+
+
+def correct_answer():
+    words.remove(word)
+    next_word()
 
 
 window = Tk()
@@ -41,13 +49,16 @@ word_label = canvas.create_text(450, 300, text="", font=("Ariel", 60, "bold"))
 canvas.grid(column=0, row=0, columnspan=2)
 
 right_img = PhotoImage(file="images/right.png")
-right_button = Button(highlightthickness=0, image=right_img, command=new_word)
+right_button = Button(highlightthickness=0, image=right_img, command=correct_answer)
 right_button.grid(column=1, row=1)
 
 wrong_img = PhotoImage(file="images/wrong.png")
-wrong_button = Button(highlightthickness=0, image=wrong_img, command=new_word)
+wrong_button = Button(highlightthickness=0, image=wrong_img, command=next_word)
 wrong_button.grid(column=0, row=1)
 
-new_word()
+next_word()
 
 window.mainloop()
+data_to_save = pandas.DataFrame(words)
+data_to_save.to_csv("data/words_to_learn.csv", index=False)
+
